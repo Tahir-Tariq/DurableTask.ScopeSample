@@ -8,13 +8,26 @@ namespace DurableTask.ScopeSample
     {
         public static async Task<string> CallActivities(OrchestrationContext context, string input)
         {
-            var output = await context.ScheduleTask<string>(typeof(Activity), input);
+            try
+            {
+                var output = await context.ScheduleTask<string>(typeof(TypedActivity), input);
 
-            output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
+                output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
 
-            output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);
+                output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);
 
-            return output;
+                output += await context.ScheduleTask<string>(typeof(ProxyActivity), new ProxyRequest { ServiceType = typeof(SimpleService), ServiceInput = null });
+
+                output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
+
+                return output;
+            }
+            catch (Exception  ex)
+            {
+
+                return ex.Message;
+            }
+          
         }
 
         public static void WriteLine(string line)

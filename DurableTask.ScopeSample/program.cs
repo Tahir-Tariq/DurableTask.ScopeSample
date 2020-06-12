@@ -27,7 +27,7 @@ namespace DurableTask.ScopeSample
 
             for (int i = 1; i <= 2; i++)
             {
-                await taskHubClient.CreateOrchestrationInstanceAsync(typeof(Orchestration), request + i);
+                await taskHubClient.CreateOrchestrationInstanceAsync(typeof(MainOrchestration), request + i);
             }
 
 
@@ -53,7 +53,9 @@ namespace DurableTask.ScopeSample
             services.AddScoped<ScopedActivity>();
             services.AddTransient<TransitiveOrchestration>();
             services.AddTransient<TransitiveActivity>();
-           
+            services.AddScoped<SimpleService>();
+            services.AddScoped<ProxyActivity>();
+
         }
 
         public void Configure(out TaskHubClient taskHubClient, out TaskHubWorker taskHub)
@@ -71,7 +73,7 @@ namespace DurableTask.ScopeSample
 
             taskHubClient = new TaskHubClient(orchestrationServiceAndClient);
             taskHub = new TaskHubWorker(orchestrationServiceAndClient);
-
+            //orchestrationServiceAndClient.DeleteAsync().Wait();
             orchestrationServiceAndClient.CreateIfNotExistsAsync().Wait();
         }
 
@@ -79,7 +81,7 @@ namespace DurableTask.ScopeSample
         {
             taskHub.AddTaskOrchestrations(
                            typeof(TypedOrchestration),
-                           typeof(Orchestration)
+                           typeof(MainOrchestration)
             );
 
             taskHub.AddTaskOrchestrations(
@@ -111,12 +113,13 @@ namespace DurableTask.ScopeSample
                 return next();
             });
 
-            taskHub.AddTaskActivities(typeof(Activity));
+            taskHub.AddTaskActivities(typeof(TypedActivity));
 
 
             taskHub.AddTaskActivities(
                 ServiceProviderObjectCreator.CreateActivityCreator<ScopedActivity>(serviceProvider),
-                ServiceProviderObjectCreator.CreateActivityCreator<TransitiveActivity>(serviceProvider)
+                ServiceProviderObjectCreator.CreateActivityCreator<TransitiveActivity>(serviceProvider),
+                ServiceProviderObjectCreator.CreateActivityCreator<ProxyActivity>(serviceProvider)
             );
         }
 

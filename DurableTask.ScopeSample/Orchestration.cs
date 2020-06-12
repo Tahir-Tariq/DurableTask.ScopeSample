@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 namespace DurableTask.ScopeSample
 {
 
-    public class Orchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
+    public class MainOrchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
     {
         private Guid instanceId;
 
-        public Orchestration()
+        public MainOrchestration()
         {
             instanceId = Guid.NewGuid();
         }
 
-        ~Orchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
+        ~MainOrchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
         public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
         public void Dispose()
         {
