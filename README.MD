@@ -4,25 +4,27 @@
 
 |(First Orchestrator scope)	  |TypedOrchestration	   |TransitiveOrchestration	   |ScopedOrchestration     |
 |------------------------------|------------------------|---------------------------|-----------------------	|
-|TypedActivity|Per request|Per request|Per request|
+|TypedActivity *1|**Per request**|**Per request**|**Per request**|
 |TransitiveActivity|Per request retained|Per request retained|Per request retained|
 |ScopedActivity|Singleton|Singleton|Singleton|
-|TypedSubOrchestration|	|Per request|Per request|Per request|
+|TypedSubOrchestration|Per request	|Per request|Per request|Per request|
 |TransitiveSubOrchestration|Per request retained|Per request but retained|Per request but retained|
 |ScopedSubOrchestration|Singleton|Singleton|Singleton|
 |ProxyActivity(as Transitive)|Per request retained|Per request but retained|Per request but retained|
 |ProxyActivity(as Scoped)|Singleton|Singleton|Singleton|
 |New scope inside ServiceProviderObjectCreator.Create method.|
 |TypedActivity|Per request|Per request|Per request|
-|TransitiveActivity|Per request|Per request|Per request|
+|TransitiveActivity*2|**Per request**|**Per request**|**Per request**|
 |ScopedActivity	|Per request|Singleton|Singleton|
 |TypedSubOrchestration|Per request|Per request|Per request|
-|TransitiveSubOrchestration|Per request|Per request|Per request|
+|TransitiveSubOrchestration *1|Per request|Per request|Per request|
 |ScopedSubOrchestration|Per request|Per request|Per request|
 |ProxyActivity(as Transitive)|Per request|Per request|Per request|
 |ProxyActivity(as Scoped)|Per request|Per request|Per request|
 
-* A new object is created every time but then it is not disposed after the use.
+* Per request but retaine: A new object is created every time but then it is not disposed after the use.
+* 1: DurableTaskFramework handling of object creation and removal. (This is what we aiming for with DI).
+* 2: Custom object creation handling with dependency injection that is creating same object lifetime as of DurableFramework.
 
 MainOrchestration executed as typed orchestration
 ----------------------------------------------------------------------------
