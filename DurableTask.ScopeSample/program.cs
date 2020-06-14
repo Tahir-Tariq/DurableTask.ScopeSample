@@ -2,13 +2,15 @@
 using DurableTask.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DurableTask.ScopeSample
 {
     class Program
     {
-        
+        int requestCount = 25;
+
         static async Task Main(string[] args)
         {
             Program program = new Program();
@@ -17,6 +19,8 @@ namespace DurableTask.ScopeSample
             program.Configure(out taskHubClient, out taskHub);
 
             ServiceCollection collection = new ServiceCollection();
+            CancellationTokenSource processingTokenSource = new CancellationTokenSource();
+
             program.ConfigureServices(collection);
             ServiceProvider serviceProvider = collection.BuildServiceProvider();
 
@@ -25,26 +29,41 @@ namespace DurableTask.ScopeSample
             await taskHub.StartAsync();
             string request = "Request";
 
-            for (int i = 1; i <= 2; i++)
+            for (int i = 1; i <= program.requestCount; i++)
             {
                 await taskHubClient.CreateOrchestrationInstanceAsync(typeof(MainOrchestration), request + i);
-            }
+            }            
+            
+            var displayTask = Task.Factory.StartNew(() => program.Display(processingTokenSource.Token));
+            
+            await Task.Factory.StartNew(() => { 
+                while (MainOrchestration.completedCount < program.requestCount) ; 
+            });
 
-
-            Console.WriteLine("Press enter to close");
-            Console.ReadLine();
-
-            Console.WriteLine("Memory used before collection:       {0:N0}",
-                       GC.GetTotalMemory(false));
-
-            // Collect all generations of memory.
-            GC.Collect();
-            Console.WriteLine("Memory used after full collection:   {0:N0}",
-                              GC.GetTotalMemory(true));
-
+            processingTokenSource.Cancel();
+            await displayTask;
             await taskHub.StopAsync();
-            Console.WriteLine("Task hub is stopped");
+
+            Console.WriteLine("Memory used before collection:       {0:N0}", GC.GetTotalMemory(false));
+            GC.Collect();
+            Console.WriteLine("Memory used after full collection:   {0:N0}", GC.GetTotalMemory(true));
+
+            Console.WriteLine(ObjectsAnalyzer.GetStatsString());
             Console.ReadLine();
+            
+        }
+
+        public void Display(CancellationToken token)
+        {
+            
+            do{
+                Console.CursorLeft = 0;
+                Console.CursorTop = 0;
+
+                Console.WriteLine("Processing...completed:" + MainOrchestration.completedCount);
+                //Task.Delay(100).GetAwaiter().GetResult();
+            } while (!token.IsCancellationRequested) ;
+            
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -53,9 +72,7 @@ namespace DurableTask.ScopeSample
             services.AddScoped<ScopedActivity>();
             services.AddTransient<TransitiveOrchestration>();
             services.AddTransient<TransitiveActivity>();
-            services.AddScoped<SimpleService>();
-            services.AddScoped<ProxyActivity>();
-
+            services.AddScoped<SimpleService>();           
         }
 
         public void Configure(out TaskHubClient taskHubClient, out TaskHubWorker taskHub)
@@ -73,7 +90,7 @@ namespace DurableTask.ScopeSample
 
             taskHubClient = new TaskHubClient(orchestrationServiceAndClient);
             taskHub = new TaskHubWorker(orchestrationServiceAndClient);
-            //orchestrationServiceAndClient.DeleteAsync().Wait();
+            orchestrationServiceAndClient.DeleteAsync().Wait();
             orchestrationServiceAndClient.CreateIfNotExistsAsync().Wait();
         }
 
@@ -85,41 +102,16 @@ namespace DurableTask.ScopeSample
             );
 
             taskHub.AddTaskOrchestrations(
-                ServiceProviderObjectCreator.CreateOrchestrationCreator<ScopedOrchestration>(serviceProvider),
-                ServiceProviderObjectCreator.CreateOrchestrationCreator<TransitiveOrchestration>(serviceProvider)
+                new ScopedOrchestrationCreator<ScopedOrchestration>(serviceProvider),
+                new ScopedOrchestrationCreator<TransitiveOrchestration>(serviceProvider)
             );
 
-            taskHub.AddOrchestrationDispatcherMiddleware((context, next) =>{
-                var orchestration = context.GetProperty<TaskOrchestration>();
-
-                if (orchestration is IMyIdentity identity)
-                {
-                    //Console.WriteLine("Middleware :" + identity.MyIdentity);
-                } 
-
-                return next();
-            });
-
-
-            taskHub.AddActivityDispatcherMiddleware((context, next) =>
-            {
-                var activity = context.GetProperty<TaskActivity>();
-
-                if (activity is IMyIdentity identity)
-                {
-                    //Console.WriteLine("Middleware :" + identity.MyIdentity);
-                }                   
-
-                return next();
-            });
 
             taskHub.AddTaskActivities(typeof(TypedActivity));
 
-
             taskHub.AddTaskActivities(
-                ServiceProviderObjectCreator.CreateActivityCreator<ScopedActivity>(serviceProvider),
-                ServiceProviderObjectCreator.CreateActivityCreator<TransitiveActivity>(serviceProvider),
-                ServiceProviderObjectCreator.CreateActivityCreator<ProxyActivity>(serviceProvider)
+                new ScopedActivityCreator<ScopedActivity>(serviceProvider),
+                new ScopedActivityCreator<TransitiveActivity>(serviceProvider)             
             );
         }
 

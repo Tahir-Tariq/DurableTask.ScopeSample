@@ -1,25 +1,26 @@
 ﻿using DurableTask.Core;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DurableTask.ScopeSample
 {
 
-    public class MainOrchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
+    public class MainOrchestration : TaskOrchestration<string, string>, IDisposable
     {
         private Guid instanceId;
-
+        public static int completedCount;
         public MainOrchestration()
         {
             instanceId = Guid.NewGuid();
+            counter = ObjectsAnalyzer.GetOrCreateCounterFor<MainOrchestration>();
+            counter.Create();
         }
+        ObjectsCounter counter;
+        ~MainOrchestration() => counter.Finalized();
+        public void Dispose() => counter.Dispose();
 
-        ~MainOrchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
         public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
-        public void Dispose()
-        {
-            Utility.WriteLine("Destroying: " + MyIdentity);
-        }
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
@@ -31,29 +32,26 @@ namespace DurableTask.ScopeSample
 
             output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
 
-            Utility.WriteLine(output);
+            Interlocked.Increment(ref completedCount);
 
             return input;
         }
     }
 
 
-    public class TypedOrchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
+    public class TypedOrchestration : TaskOrchestration<string, string>, IDisposable
     {
         private Guid instanceId;
 
         public TypedOrchestration()
         {
             instanceId = Guid.NewGuid();
+            counter = ObjectsAnalyzer.GetOrCreateCounterFor<TypedOrchestration>();
+            counter.Create();
         }
-
-        ~TypedOrchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
-
-
-        public void Dispose()
-        {
-            Utility.WriteLine("Destroying: " + MyIdentity);
-        }
+        ObjectsCounter counter;
+        ~TypedOrchestration() => counter.Finalized();
+        public void Dispose() => counter.Dispose();        
 
         public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
 
@@ -63,21 +61,20 @@ namespace DurableTask.ScopeSample
         }
     }
 
-    public class ScopedOrchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
+    public class ScopedOrchestration : TaskOrchestration<string, string>, IDisposable
     {
         private Guid instanceId;
 
         public ScopedOrchestration()
         {
             instanceId = Guid.NewGuid();
+            counter = ObjectsAnalyzer.GetOrCreateCounterFor<ScopedOrchestration>();
+            counter.Create();
         }
+        ObjectsCounter counter;
+        ~ScopedOrchestration() => counter.Finalized();
+        public void Dispose() => counter.Dispose();
 
-        ~ScopedOrchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
-
-        public void Dispose()
-        {
-            Utility.WriteLine("Destroying: " + MyIdentity);
-        }
 
         public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
 
@@ -87,18 +84,19 @@ namespace DurableTask.ScopeSample
         }
     }
 
-    public class TransitiveOrchestration : TaskOrchestration<string, string>, IDisposable, IMyIdentity
+    public class TransitiveOrchestration : TaskOrchestration<string, string>, IDisposable
     {
         private Guid instanceId;
 
         public TransitiveOrchestration()
         {
             instanceId = Guid.NewGuid();
+            counter = ObjectsAnalyzer.GetOrCreateCounterFor<TransitiveOrchestration>();
+            counter.Create();
         }
-
-        ~TransitiveOrchestration() => Utility.WriteLine("Finalizer: " + MyIdentity);
-
-        public void Dispose() => Utility.WriteLine("Destroying: " + MyIdentity);
+        ObjectsCounter counter;
+        ~TransitiveOrchestration() => counter.Finalized();
+        public void Dispose() => counter.Dispose();
 
         public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
 

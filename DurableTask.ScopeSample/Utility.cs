@@ -14,9 +14,7 @@ namespace DurableTask.ScopeSample
 
                 output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
 
-                output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);
-
-                output += await context.ScheduleTask<string>(typeof(ProxyActivity), new ProxyRequest { ServiceType = typeof(SimpleService), ServiceInput = null });
+                output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);              
 
                 output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
 
@@ -29,10 +27,7 @@ namespace DurableTask.ScopeSample
             }
           
         }
-
-        public static void WriteLine(string line)
-         => Console.WriteLine(line);
-
+     
          public static string FormatInstance(string name, Guid instance)
             => name + ": " + instance + " ";
     }
