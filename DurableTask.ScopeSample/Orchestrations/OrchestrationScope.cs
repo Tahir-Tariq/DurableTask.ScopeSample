@@ -25,29 +25,29 @@ namespace DurableTask.ScopeSample.Orchestration
             counter.Finalized();
             taskOrchestration = null;
         }
+
         public void Dispose() 
-        { 
+        {
             counter.Dispose();
+            
             taskOrchestration = null;            
         }
 
         TaskOrchestration taskOrchestration;
-        public override async Task<string> Execute(OrchestrationContext context, string input)
+        public override Task<string> Execute(OrchestrationContext context, string input)
         {
             using (IServiceScope scope = this.services.CreateScope())
-            {
-                var orchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
+            {                
+                taskOrchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
 
-                taskOrchestration = orchestration;
-
-                return await orchestration.Execute(context, input);
-            }            
+                return taskOrchestration.Execute(context, input);
+            }
         }
 
         public override void RaiseEvent(OrchestrationContext context, string name, string input)
-            => taskOrchestration.RaiseEvent(context, name, input);        
+            => taskOrchestration.RaiseEvent(context, name, input);
 
         public override string GetStatus()
-            => taskOrchestration.GetStatus();        
-    }   
+            => taskOrchestration.GetStatus();
+    }
 }
