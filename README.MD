@@ -1,18 +1,20 @@
 # Durable scope table
 
-sample output wirh 25 requests:
+sample output with 25 requests:
 
 Processing...completed:25
-Memory used before collection:       15,372,928
-Memory used after full collection:   7,165,376
-SimpleService => created: 225, disposed: 225, finalized: 225
-MainOrchestration => created: 100, disposed: 0, finalized: 25
-ScopedActivity => created: 150, disposed: 150, finalized: 150
-TypedActivity => created: 75, disposed: 0, finalized: 75
-TransitiveOrchestration => created: 250, disposed: 250, finalized: 150
-TransitiveActivity => created: 75, disposed: 75, finalized: 75
-ActivityScope => created: 225, disposed: 0, finalized: 225
-OrchestrationScope => created: 250, disposed: 0, finalized: 250
-ScopedOrchestration => created: 250, disposed: 250, finalized: 150
-TypedOrchestration => created: 125, disposed: 0, finalized: 25
+Memory used before collection:       13,436,336
+Memory used after full collection:   6,616,112
 
+|Type |Created| Disposed| Finalized|
+|--:|--|--|--|
+|SimpleService |150| 150| 150|
+|ScopedActivity |75| 75| 75|
+|TransitiveActivity |75| 75| 75|
+|TypedActivity |75| 0| 75|
+|ActivityScope |150| 0| 150|
+|ScopedOrchestration |100| 25| 25|
+|TransitiveOrchestration |100| 25| 25|
+|TypedOrchestration |100| 0| 25|
+|MainOrchestration |100| 0| 25|
+|ScopedOrchestration |100| 25| 25|

@@ -14,9 +14,7 @@ namespace DurableTask.ScopeSample
 
                 output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
 
-                output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);              
-
-                output += await context.ScheduleTask<string>(typeof(ScopedActivity), input);
+                output += await context.ScheduleTask<string>(typeof(TransitiveActivity), input);               
 
                 return output;
             }

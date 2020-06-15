@@ -15,11 +15,19 @@ namespace DurableTask.ScopeSample
         {
             StringBuilder stringBuilder = new StringBuilder();
 
+            stringBuilder.AppendLine("|Type |Created| Disposed| Finalized|");
+            stringBuilder.AppendLine("|--:|--|--|--|");
+
             foreach (var item in counterTable)
-            {
-                stringBuilder.AppendLine($"{item.Key.Name} => {item.Value.GetStatsString()}");
+            {                
+                stringBuilder.AppendLine($"|{item.Key.Name} {GetStatsString(item.Value)}");
             }
             return stringBuilder.ToString();
+        }
+
+        private static string GetStatsString(ObjectsCounter counter)
+        {
+            return string.Format("|{0}| {1}| {2}|", counter.created, counter.disposed, counter.finalized);
         }
     }
 }

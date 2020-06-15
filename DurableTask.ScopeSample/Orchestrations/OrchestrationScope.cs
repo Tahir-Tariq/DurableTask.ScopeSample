@@ -19,38 +19,35 @@ namespace DurableTask.ScopeSample.Orchestration
             counter.Create();
         }
         ObjectsCounter counter;
-        ~OrchestrationScope() => counter.Finalized();
-        public void Dispose() => counter.Dispose();       
 
-        public override Task<string> Execute(OrchestrationContext context, string input)
+        ~OrchestrationScope() 
+        {
+            counter.Finalized();
+            taskOrchestration = null;
+        }
+        public void Dispose() 
+        { 
+            counter.Dispose();
+            taskOrchestration = null;            
+        }
+
+        TaskOrchestration taskOrchestration;
+        public override async Task<string> Execute(OrchestrationContext context, string input)
         {
             using (IServiceScope scope = this.services.CreateScope())
             {
                 var orchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
 
-                return orchestration.Execute(context, input);
-            }
+                taskOrchestration = orchestration;
+
+                return await orchestration.Execute(context, input);
+            }            
         }
 
         public override void RaiseEvent(OrchestrationContext context, string name, string input)
-        {
-            using (IServiceScope scope = this.services.CreateScope())
-            {
-                var orchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
-
-                orchestration.RaiseEvent(context, name, input);
-            }
-        }
+            => taskOrchestration.RaiseEvent(context, name, input);        
 
         public override string GetStatus()
-        {
-            using (IServiceScope scope = this.services.CreateScope())
-            {
-                var orchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
-
-                return orchestration.GetStatus();
-            }
-        }
-    }
-   
+            => taskOrchestration.GetStatus();        
+    }   
 }
