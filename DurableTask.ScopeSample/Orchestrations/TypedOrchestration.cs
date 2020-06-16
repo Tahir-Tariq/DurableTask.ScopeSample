@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using DurableTask.ScopeSample.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -22,7 +23,11 @@ namespace DurableTask.ScopeSample
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
-            return $"{MyIdentity}[{await Utility.CallActivities(context, input)}]";
+            await Task.Delay(500);
+
+            new DummyService().DoSomethingWithExternalResource();
+
+            return "Done";
         }
     }
 

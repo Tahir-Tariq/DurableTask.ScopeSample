@@ -2,6 +2,7 @@
 using DurableTask.ScopeSample.Orchestrations;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,16 +25,18 @@ namespace DurableTask.ScopeSample
 
             durableService.RegisterOrchestrationAndActivities(taskHub, serviceProvider);
 
-            int requestCount = 25;
+            int requestCount = 1;
 
             await taskHub.StartAsync();
             string request = "Request";
 
             var displayTask = Task.Factory.StartNew(() => Display(processingTokenSource.Token));
-
+            var orchestrationList = new List<OrchestrationInstance>();
             for (int i = 1; i <= requestCount; i++)
             {
-                await taskHubClient.CreateOrchestrationInstanceAsync(typeof(DummyOrchestration), request + i);
+                var instance = await taskHubClient.CreateOrchestrationInstanceAsync(typeof(MainOrchestration), request + i);
+
+                orchestrationList.Add(instance);
             }
 
             await Task.Factory.StartNew(() => { 
@@ -42,15 +45,27 @@ namespace DurableTask.ScopeSample
 
             processingTokenSource.Cancel();
             await displayTask;
+
+            bool running = true;
+            while (running)
+            {
+                foreach (var oi in orchestrationList)
+                {
+                    running = false;
+
+                    var state = await taskHubClient.GetOrchestrationStateAsync(oi);
+
+                    if (state.OrchestrationStatus != OrchestrationStatus.Completed)
+                        running = true;
+                    if (state.OrchestrationStatus == OrchestrationStatus.Completed)
+                        Console.WriteLine("'{0}'=> {1}", state.Input, state.Output);
+                }
+            }            
+
             await taskHub.StopAsync();
             taskHub.Dispose();
-
-            Console.WriteLine("Memory used before collection:       {0:N0}", GC.GetTotalMemory(false));
-            GC.Collect();
-            Console.WriteLine("Memory used after full collection:   {0:N0}", GC.GetTotalMemory(true));
-
-            Console.WriteLine(ObjectsAnalyzer.GetStatsString());
             Console.ReadLine();
+         
             
         }
 

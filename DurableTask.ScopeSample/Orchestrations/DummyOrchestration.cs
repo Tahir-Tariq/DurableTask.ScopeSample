@@ -13,11 +13,11 @@ namespace DurableTask.ScopeSample.Orchestrations
 
         public DummyOrchestration(DummyService service) => this.service = service ?? throw new ArgumentNullException(nameof(service));
 
-        public override async Task<string> RunTask(OrchestrationContext context, string input)
-        {
-            await Task.Delay(5000);
+        public override Task<string> RunTask(OrchestrationContext context, string input)
+        {            
             this.service.DoSomethingWithExternalResource();
-            return "Completed";
+
+            return Task.FromResult("DummyOrchestration completed;");
         }
     }
 }

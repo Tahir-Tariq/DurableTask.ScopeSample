@@ -11,19 +11,24 @@ namespace DurableTask.ScopeSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<DummyOrchestration>();
+            services.AddScoped<DummyService>();
+            services.AddScoped<DummyActivity>();
+
+            services.AddScoped<AnotherDummyOrchestration>();
+            
             services.AddScoped<ScopedOrchestration>();
             services.AddScoped<ScopedActivity>();
             services.AddTransient<TransitiveOrchestration>();
             services.AddTransient<TransitiveActivity>();
             services.AddScoped<SimpleService>();
-            services.AddScoped<DummyService>();
+            
         }
 
         public void Configure(out TaskHubClient taskHubClient, out TaskHubWorker taskHub)
         {
             string storageConnectionString = "UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://127.0.0.1:10002/";
 
-            string taskHubName = "ScopeSample";
+            string taskHubName = "ScopeSampleoa";
 
             var orchestrationServiceAndClient =
                 new AzureStorageOrchestrationService(new AzureStorageOrchestrationServiceSettings
@@ -34,7 +39,8 @@ namespace DurableTask.ScopeSample
 
             taskHubClient = new TaskHubClient(orchestrationServiceAndClient);
             taskHub = new TaskHubWorker(orchestrationServiceAndClient);
-            
+
+            orchestrationServiceAndClient.DeleteAsync().Wait();
             orchestrationServiceAndClient.CreateIfNotExistsAsync().Wait();
         }
 
@@ -47,6 +53,7 @@ namespace DurableTask.ScopeSample
 
             taskHub.AddTaskOrchestrations(
                 new ScopedOrchestrationCreator<DummyOrchestration>(serviceProvider),
+                new ScopedOrchestrationCreator<AnotherDummyOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<ScopedOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<TransitiveOrchestration>(serviceProvider)
             );
@@ -56,7 +63,8 @@ namespace DurableTask.ScopeSample
 
             taskHub.AddTaskActivities(
                 new ScopedActivityCreator<ScopedActivity>(serviceProvider),
-                new ScopedActivityCreator<TransitiveActivity>(serviceProvider)
+                new ScopedActivityCreator<TransitiveActivity>(serviceProvider),
+                new ScopedActivityCreator<DummyActivity>(serviceProvider)
             );
         }
 

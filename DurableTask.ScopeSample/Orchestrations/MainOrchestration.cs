@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using DurableTask.ScopeSample.Orchestrations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,21 +25,18 @@ namespace DurableTask.ScopeSample
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
-            var output = input + MyIdentity;
-
-            Task<string> scopedOrchestrationTask = context.CreateSubOrchestrationInstance<string>(typeof(ScopedOrchestration), context.OrchestrationInstance.ExecutionId, input);
-
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TransitiveOrchestration), input);
+            string output = "";
             
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
+            output += await context.CreateSubOrchestrationInstance<string>(typeof(DummyOrchestration), input);
 
-            context.SendEvent(new OrchestrationInstance { InstanceId = context.OrchestrationInstance.ExecutionId }, "EventTest", "EventData");
+            output += await context.CreateSubOrchestrationInstance<string>(typeof(AnotherDummyOrchestration), input);
 
-            output += await scopedOrchestrationTask;
+            // Uncomment following line to see how Durable framework will behave when Orchestration has async call in it.
+            //output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
 
             Interlocked.Increment(ref completedCount);
 
-            return input;
+            return output;
         }
     }
 
