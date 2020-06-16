@@ -18,11 +18,13 @@ namespace DurableTask.ScopeSample
         ~TypedOrchestration() => counter.Finalized();
         public void Dispose() => counter.Dispose();        
 
-        public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
+        public string MyIdentity => this.GetType().Name + instanceId;
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
-            return $"{MyIdentity}[{await Utility.CallActivities(context, input)}]";
+            var output = await context.ScheduleTask<string>(typeof(TypedActivity), input);
+
+            return $"{MyIdentity}[{output}]";
         }
     }
 

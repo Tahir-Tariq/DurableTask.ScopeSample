@@ -14,13 +14,11 @@ namespace DurableTask.ScopeSample
         }
         ObjectsCounter counter;
         ~TypedActivity() => counter.Finalized();
-        public void Dispose() => counter.Dispose();
-
-        public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
+        public void Dispose() => counter.Dispose();        
 
         protected override string Execute(DurableTask.Core.TaskContext context, string input)
         {
-            return MyIdentity;
+            return this.GetType().Name + instanceId;
         }
     }    
 }

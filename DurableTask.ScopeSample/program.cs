@@ -14,14 +14,10 @@ namespace DurableTask.ScopeSample
 
             TaskHubClient taskHubClient; TaskHubWorker taskHub;
             durableService.Configure(out taskHubClient, out taskHub);
+            
+            CancellationTokenSource processingTokenSource = new CancellationTokenSource();                        
 
-            ServiceCollection collection = new ServiceCollection();
-            CancellationTokenSource processingTokenSource = new CancellationTokenSource();
-
-            durableService.ConfigureServices(collection);
-            ServiceProvider serviceProvider = collection.BuildServiceProvider();
-
-            durableService.RegisterOrchestrationAndActivities(taskHub, serviceProvider);
+            durableService.RegisterOrchestrationAndActivities(taskHub);
 
             int requestCount = 25;
 

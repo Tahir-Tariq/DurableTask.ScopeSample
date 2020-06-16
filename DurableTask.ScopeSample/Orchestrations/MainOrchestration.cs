@@ -19,26 +19,17 @@ namespace DurableTask.ScopeSample
         ObjectsCounter counter;
         ~MainOrchestration() => counter.Finalized();
         public void Dispose() => counter.Dispose();
-
-        public string MyIdentity => Utility.FormatInstance(this.GetType().Name, instanceId);
+        
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
-            var output = input + MyIdentity;
-
-            Task<string> scopedOrchestrationTask = context.CreateSubOrchestrationInstance<string>(typeof(ScopedOrchestration), context.OrchestrationInstance.ExecutionId, input);
-
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TransitiveOrchestration), input);
+            var output = input + this.GetType().Name + instanceId; ;
             
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
-
-            context.SendEvent(new OrchestrationInstance { InstanceId = context.OrchestrationInstance.ExecutionId }, "EventTest", "EventData");
-
-            output += await scopedOrchestrationTask;
+            output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);            
 
             Interlocked.Increment(ref completedCount);
 
-            return input;
+            return output;
         }
     }
 

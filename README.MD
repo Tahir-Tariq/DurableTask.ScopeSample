@@ -4,22 +4,13 @@ sample output with 25 requests:
 
 Processing...completed:25
 
-Memory used before collection:       11,705,688
+Memory used before collection:       11,703,336
 
-Memory used after full collection:   5,708,416
-
+Memory used after full collection:   3,991,504
 
 |Type |Created| Disposed| Finalized|
 |--:|--|--|--|
-|SimpleService |150| 150| 150|
-|ScopedActivity |75| 75| 75|
-|TransitiveActivity |75| 75| 75|
-|TypedActivity |75| 0| 75|
-|ActivityScope |150| 0| 150|
-|ScopedOrchestration |100| 100| 25|
-|TransitiveOrchestration |100| 100| 25|
-|TypedOrchestration |100| 0| 25|
-|MainOrchestration |100| 0| 25|
-|OrchestrationScope |200| 0| 200|
-
+|MainOrchestration |50| 0| 25|
+|TypedOrchestration |50| 0| 25|
+|TypedActivity |25| 0| 25|
 	
