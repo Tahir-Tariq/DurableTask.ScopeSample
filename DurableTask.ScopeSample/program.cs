@@ -1,5 +1,6 @@
 ﻿using DurableTask.Core;
 using DurableTask.ScopeSample.Orchestrations;
+using Dynamitey.DynamicObjects;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
@@ -37,13 +38,16 @@ namespace DurableTask.ScopeSample
             }
 
             await Task.Factory.StartNew(() => { 
-                while (MainOrchestration.completedCount < requestCount) ; 
+                while (DummyOrchestration.completed < requestCount) ; 
             });
 
             processingTokenSource.Cancel();
             await displayTask;
             await taskHub.StopAsync();
             taskHub.Dispose();
+
+            Console.WriteLine("Completed dummy orchestrations: {0}", DummyOrchestration.completed);
+            Console.WriteLine("Disposed dummy orchestrations: {0}", DummyOrchestration.disposed);
 
             Console.WriteLine("Memory used before collection:       {0:N0}", GC.GetTotalMemory(false));
             GC.Collect();
