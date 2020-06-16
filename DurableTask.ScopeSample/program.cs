@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using DurableTask.ScopeSample.Orchestrations;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
@@ -32,7 +33,7 @@ namespace DurableTask.ScopeSample
 
             for (int i = 1; i <= requestCount; i++)
             {
-                await taskHubClient.CreateOrchestrationInstanceAsync(typeof(MainOrchestration), request + i);
+                await taskHubClient.CreateOrchestrationInstanceAsync(typeof(DummyOrchestration), request + i);
             }
 
             await Task.Factory.StartNew(() => { 

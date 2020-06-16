@@ -1,5 +1,7 @@
 ﻿using DurableTask.AzureStorage;
 using DurableTask.Core;
+using DurableTask.ScopeSample.Orchestrations;
+using DurableTask.ScopeSample.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DurableTask.ScopeSample
@@ -8,11 +10,13 @@ namespace DurableTask.ScopeSample
     {        
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<DummyOrchestration>();
             services.AddScoped<ScopedOrchestration>();
             services.AddScoped<ScopedActivity>();
             services.AddTransient<TransitiveOrchestration>();
             services.AddTransient<TransitiveActivity>();
             services.AddScoped<SimpleService>();
+            services.AddScoped<DummyService>();
         }
 
         public void Configure(out TaskHubClient taskHubClient, out TaskHubWorker taskHub)
@@ -42,6 +46,7 @@ namespace DurableTask.ScopeSample
             );
 
             taskHub.AddTaskOrchestrations(
+                new ScopedOrchestrationCreator<DummyOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<ScopedOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<TransitiveOrchestration>(serviceProvider)
             );

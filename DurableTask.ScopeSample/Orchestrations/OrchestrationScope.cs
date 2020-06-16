@@ -17,13 +17,13 @@ namespace DurableTask.ScopeSample.Orchestration
         }
         
         TaskOrchestration taskOrchestration;
-        public override async Task<string> Execute(OrchestrationContext context, string input)
+        public override Task<string> Execute(OrchestrationContext context, string input)
         {
             using (IServiceScope scope = this.services.CreateScope())
             {                
                 taskOrchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
 
-                return await taskOrchestration.Execute(context, input);
+                return taskOrchestration.Execute(context, input);
             }
         }
 
