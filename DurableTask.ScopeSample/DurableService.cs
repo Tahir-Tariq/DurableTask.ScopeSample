@@ -42,11 +42,11 @@ namespace DurableTask.ScopeSample
         {
             taskHub.AddTaskOrchestrations(
                            typeof(TypedOrchestration),
-                           typeof(MainOrchestration),
-                           typeof(DummyOrchestration)
+                           typeof(MainOrchestration)
             );
 
             taskHub.AddTaskOrchestrations(
+                new ScopedOrchestrationCreator<DummyOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<ScopedOrchestration>(serviceProvider),
                 new ScopedOrchestrationCreator<TransitiveOrchestration>(serviceProvider)
             );

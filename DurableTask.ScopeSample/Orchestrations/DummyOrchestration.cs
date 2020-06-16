@@ -15,9 +15,9 @@ namespace DurableTask.ScopeSample.Orchestrations
 
         private readonly DummyService service;
 
-        public DummyOrchestration()
+        public DummyOrchestration(DummyService service)
         {
-            this.service = new DummyService();
+            this.service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
@@ -30,7 +30,7 @@ namespace DurableTask.ScopeSample.Orchestrations
             }
             catch (ObjectDisposedException)
             {
-                Console.WriteLine("Service disposed prematurely!");
+                Console.WriteLine("Service disposed prematurely! This is a bug.");
             }
             finally
             {
@@ -43,7 +43,6 @@ namespace DurableTask.ScopeSample.Orchestrations
         public void Dispose()
         {
             Interlocked.Increment(ref disposed);
-            this.service.Dispose();
         }
     }
 }
