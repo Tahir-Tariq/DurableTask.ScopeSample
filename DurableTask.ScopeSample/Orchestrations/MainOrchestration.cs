@@ -1,4 +1,5 @@
 ﻿using DurableTask.Core;
+using DurableTask.ScopeSample.Orchestrations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,21 +25,13 @@ namespace DurableTask.ScopeSample
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
-            var output = input + MyIdentity;
-
-            Task<string> scopedOrchestrationTask = context.CreateSubOrchestrationInstance<string>(typeof(ScopedOrchestration), context.OrchestrationInstance.ExecutionId, input);
-
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TransitiveOrchestration), input);
+            var output = input;
             
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
-
-            context.SendEvent(new OrchestrationInstance { InstanceId = context.OrchestrationInstance.ExecutionId }, "EventTest", "EventData");
-
-            output += await scopedOrchestrationTask;
+            output += await context.CreateSubOrchestrationInstance<string>(typeof(DummyOrchestration), input);                       
 
             Interlocked.Increment(ref completedCount);
 
-            return input;
+            return output;
         }
     }
 
