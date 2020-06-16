@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DurableTask.ScopeSample.Orchestration
 {
-    public class OrchestrationScope : TaskOrchestration, IDisposable
+    public class OrchestrationScope : TaskOrchestration
     {
         private readonly IServiceProvider services;
         private readonly Type orchestrationType;
@@ -14,33 +14,16 @@ namespace DurableTask.ScopeSample.Orchestration
             this.services = services ?? throw new ArgumentNullException(nameof(services));
 
             this.orchestrationType = orchestrationType ?? throw new ArgumentNullException(nameof(orchestrationType));
-
-            counter = ObjectsAnalyzer.GetOrCreateCounterFor<OrchestrationScope>();
-            counter.Create();
         }
-        ObjectsCounter counter;
-
-        ~OrchestrationScope() 
-        {
-            counter.Finalized();
-            taskOrchestration = null;
-        }
-
-        public void Dispose() 
-        {
-            counter.Dispose();
-            
-            taskOrchestration = null;            
-        }
-
+        
         TaskOrchestration taskOrchestration;
-        public override Task<string> Execute(OrchestrationContext context, string input)
+        public override async Task<string> Execute(OrchestrationContext context, string input)
         {
             using (IServiceScope scope = this.services.CreateScope())
             {                
                 taskOrchestration = (TaskOrchestration)scope.ServiceProvider.GetService(orchestrationType);
 
-                return taskOrchestration.Execute(context, input);
+                return await taskOrchestration.Execute(context, input);
             }
         }
 

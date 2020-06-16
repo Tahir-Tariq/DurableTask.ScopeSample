@@ -26,11 +26,15 @@ namespace DurableTask.ScopeSample
         {
             var output = input + MyIdentity;
 
+            Task<string> scopedOrchestrationTask = context.CreateSubOrchestrationInstance<string>(typeof(ScopedOrchestration), context.OrchestrationInstance.ExecutionId, input);
+
             output += await context.CreateSubOrchestrationInstance<string>(typeof(TransitiveOrchestration), input);
-
-            output += await context.CreateSubOrchestrationInstance<string>(typeof(ScopedOrchestration), input);
-
+            
             output += await context.CreateSubOrchestrationInstance<string>(typeof(TypedOrchestration), input);
+
+            context.SendEvent(new OrchestrationInstance { InstanceId = context.OrchestrationInstance.ExecutionId }, "EventTest", "EventData");
+
+            output += await scopedOrchestrationTask;
 
             Interlocked.Increment(ref completedCount);
 

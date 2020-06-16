@@ -33,13 +33,13 @@ namespace DurableTask.ScopeSample.Activities
             }
         }
         
-        public override Task<string> RunAsync(TaskContext context, string input)        
+        public override async Task<string> RunAsync(TaskContext context, string input)        
         {
             using (IServiceScope scope = this.services.CreateScope())
             {
                 var activity = (TaskActivity)scope.ServiceProvider.GetService(activityType);
 
-                return activity.RunAsync(context, input);
+                return await activity.RunAsync(context, input);
             }
         }
     }

@@ -30,7 +30,7 @@ namespace DurableTask.ScopeSample
 
             taskHubClient = new TaskHubClient(orchestrationServiceAndClient);
             taskHub = new TaskHubWorker(orchestrationServiceAndClient);
-            orchestrationServiceAndClient.DeleteAsync().Wait();
+            
             orchestrationServiceAndClient.CreateIfNotExistsAsync().Wait();
         }
 

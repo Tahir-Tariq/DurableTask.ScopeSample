@@ -23,7 +23,7 @@ namespace DurableTask.ScopeSample
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
             return $"{MyIdentity}[{await Utility.CallActivities(context, input)}]";
-        }
+        }        
     }
 
 }

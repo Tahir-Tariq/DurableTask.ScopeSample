@@ -33,8 +33,8 @@ namespace DurableTask.ScopeSample
             for (int i = 1; i <= requestCount; i++)
             {
                 await taskHubClient.CreateOrchestrationInstanceAsync(typeof(MainOrchestration), request + i);
-            }            
-                                    
+            }
+
             await Task.Factory.StartNew(() => { 
                 while (MainOrchestration.completedCount < requestCount) ; 
             });
