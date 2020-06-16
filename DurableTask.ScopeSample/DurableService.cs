@@ -11,6 +11,7 @@ namespace DurableTask.ScopeSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<DummyOrchestration>();
+            services.AddScoped<DummyActivity>();
             services.AddScoped<ScopedOrchestration>();
             services.AddScoped<ScopedActivity>();
             services.AddTransient<TransitiveOrchestration>();
@@ -56,6 +57,7 @@ namespace DurableTask.ScopeSample
 
             taskHub.AddTaskActivities(
                 new ScopedActivityCreator<ScopedActivity>(serviceProvider),
+                new ScopedActivityCreator<DummyActivity>(serviceProvider),
                 new ScopedActivityCreator<TransitiveActivity>(serviceProvider)
             );
         }

@@ -10,6 +10,7 @@ namespace DurableTask.ScopeSample.Orchestrations
 {
     public class DummyOrchestration : TaskOrchestration<string, string>, IDisposable
     {
+        public static int created = 0;
         public static int completed = 0;
         public static int disposed = 0;
 
@@ -17,16 +18,22 @@ namespace DurableTask.ScopeSample.Orchestrations
 
         public DummyOrchestration(DummyService service)
         {
-            this.service = service ?? throw new ArgumentNullException(nameof(service));
+            this.service = service ?? throw new ArgumentNullException(nameof(service));            
+            Interlocked.Increment(ref created);
+            counter = ObjectsAnalyzer.GetOrCreateCounterFor<DummyOrchestration>();
+            counter.Create();
         }
+        ObjectsCounter counter;                
 
         public override async Task<string> RunTask(OrchestrationContext context, string input)
         {
             try
             {
-                await Task.Delay(5000);
-                this.service.DoSomethingWithExternalResource();
-                return "Completed";
+                await context.ScheduleTask<string>(typeof(DummyActivity), input);
+
+                await context.ScheduleTask<string>(typeof(DummyActivity), input);
+
+                return await context.ScheduleTask<string>(typeof(DummyActivity), input);
             }
             catch (ObjectDisposedException)
             {
@@ -43,6 +50,7 @@ namespace DurableTask.ScopeSample.Orchestrations
         public void Dispose()
         {
             Interlocked.Increment(ref disposed);
+            counter.Dispose();
         }
     }
 }

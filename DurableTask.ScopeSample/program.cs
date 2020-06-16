@@ -25,7 +25,7 @@ namespace DurableTask.ScopeSample
 
             durableService.RegisterOrchestrationAndActivities(taskHub, serviceProvider);
 
-            int requestCount = 25;
+            int requestCount = 1;
 
             await taskHub.StartAsync();
             string request = "Request";
@@ -46,8 +46,9 @@ namespace DurableTask.ScopeSample
             await taskHub.StopAsync();
             taskHub.Dispose();
 
+            Console.WriteLine("Created dummy orchestrations: {0}", DummyOrchestration.created);
             Console.WriteLine("Completed dummy orchestrations: {0}", DummyOrchestration.completed);
-            Console.WriteLine("Disposed dummy orchestrations: {0}", DummyOrchestration.disposed);
+            Console.WriteLine("Disposed dummy orchestrations: {0}", DummyOrchestration.disposed);            
 
             Console.WriteLine("Memory used before collection:       {0:N0}", GC.GetTotalMemory(false));
             GC.Collect();
